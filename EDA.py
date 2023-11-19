@@ -27,6 +27,7 @@ asegurados["FECHAS"] = asegurados["FECHA_INICIO"] == asegurados["FECHA_CANCELACI
 asegurados = asegurados[asegurados['FECHAS'] == False]
 asegurados.shape
 asegurados.drop("FECHAS", axis=1, inplace=True)
+asegurados.columns = asegurados.columns.str.upper()
 asegurados.head()
 
 
@@ -35,36 +36,58 @@ diagnostico.columns
 diagnostico.head()
 fn.unicos(diagnostico) #valores únicos en cada una de las variables del df
 diagnostico.duplicated().sum()
-diagnostico["Diagnostico_Codigo"].duplicated().sum()
-diagnostico["Diagnostico_Desc"].duplicated().sum()
-diagnostico.isnull().sum()
-diagnostico["Diagnostico_Desc"].value_counts()  
-diagnostico[diagnostico['Diagnostico_Desc'] == "DIAGNÓSTICO PENDIENTE"]
+# Convertir las columnas a mayúsculas
+diagnostico.columns = diagnostico.columns.str.upper()
+# Convertir los valores a minúsculas
+diagnostico = diagnostico.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
 
 #Genero
 genero.columns
 genero.head()
 fn.unicos(genero)
 genero.isnull().sum()
-##### Esta base de datos es un diccionario
+mapeo = {1:0,2:1}
+genero["Sexo_Cd"] = genero["Sexo_Cd"].replace(mapeo)
+# Convertir las columnas a mayúsculas
+genero.columns = genero.columns.str.upper()
+# Convertir los valores a minúsculas
+genero = genero.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+genero.rename(columns={'SEXO_CD.1': 'SEXO_CD_DESC'}, inplace=True)
+genero.head()
+
 
 #Reclamos
 reclamos.columns
 reclamos.head()
 fn.unicos(reclamos)
 reclamos.isnull().sum()
+# Convertir las columnas a mayúsculas
+reclamos.columns = reclamos.columns.str.upper()
+# Convertir los valores a minúsculas
+reclamos = reclamos.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+reclamos.head()
 
 #Regional
 regional.columns
 regional.head()
 fn.unicos(regional)
 regional.isnull().sum()
+# Convertir las columnas a mayúsculas
+regional.columns = regional.columns.str.upper()
+# Convertir los valores a minúsculas
+regional = regional.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+regional.head()
 
 #Demograficos
 demograficas.columns
 demograficas.head()
 fn.unicos(demograficas)
 demograficas.isnull().sum()
+demograficas["Regional"] = demograficas["Regional"].replace('#N/D', -1)
+demograficas["Regional"] = demograficas["Regional"].astype("int")
+# Convertir las columnas a mayúsculas
+demograficas.columns = demograficas.columns.str.upper()
+demograficas.head()
 
 #Utilizaciones
 utilizaciones.columns
