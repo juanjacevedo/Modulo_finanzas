@@ -2,6 +2,7 @@
 import pandas as pd
 import funciones as fn 
 import dtale
+from collections import Counter
 
 
 #Datos
@@ -28,6 +29,7 @@ asegurados = asegurados[asegurados['FECHAS'] == False]
 asegurados.shape
 asegurados.drop("FECHAS", axis=1, inplace=True)
 asegurados.columns = asegurados.columns.str.upper()
+asegurados.info()
 asegurados.head()
 
 
@@ -40,6 +42,15 @@ diagnostico.duplicated().sum()
 diagnostico.columns = diagnostico.columns.str.upper()
 # Convertir los valores a minúsculas
 diagnostico = diagnostico.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+# for columna in diagnostico.columns:
+#     conteo_valores = Counter(diagnostico[columna])
+#     conteo_filtrado = {k: v for k, v in conteo_valores.items() if v > 1}
+#     # print(f"Conteo de valores en {columna} con frecuencia mayor a 1:\n{conteo_filtrado}\n")
+#     conteo_filtrado = (list(conteo_filtrado.items()))
+# for i in conteo_filtrado:
+#     print(i)
+diagnostico.info()
+diagnostico.head()
 
 #Genero
 genero.columns
@@ -53,6 +64,7 @@ genero.columns = genero.columns.str.upper()
 # Convertir los valores a minúsculas
 genero = genero.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
 genero.rename(columns={'SEXO_CD.1': 'SEXO_CD_DESC'}, inplace=True)
+genero.info()
 genero.head()
 
 
@@ -65,6 +77,7 @@ reclamos.isnull().sum()
 reclamos.columns = reclamos.columns.str.upper()
 # Convertir los valores a minúsculas
 reclamos = reclamos.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+reclamos.info()
 reclamos.head()
 
 #Regional
@@ -76,6 +89,7 @@ regional.isnull().sum()
 regional.columns = regional.columns.str.upper()
 # Convertir los valores a minúsculas
 regional = regional.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+regional.info()
 regional.head()
 
 #Demograficos
@@ -85,8 +99,12 @@ fn.unicos(demograficas)
 demograficas.isnull().sum()
 demograficas["Regional"] = demograficas["Regional"].replace('#N/D', -1)
 demograficas["Regional"] = demograficas["Regional"].astype("int")
+mapeo = {1:0,2:1}
+demograficas["Sexo_Cd"] = demograficas["Sexo_Cd"].replace(mapeo)
+demograficas["FechaNacimiento"] = demograficas["FechaNacimiento"].apply(fn.fecha)
 # Convertir las columnas a mayúsculas
 demograficas.columns = demograficas.columns.str.upper()
+demograficas.info()
 demograficas.head()
 
 #Utilizaciones
@@ -94,7 +112,20 @@ utilizaciones.columns
 utilizaciones.head()
 fn.unicos(utilizaciones)
 utilizaciones.isnull().sum()
+utilizaciones["Fecha_Reclamacion"] = utilizaciones["Fecha_Reclamacion"].apply(fn.fecha)
+# Convertir las columnas a mayúsculas
+utilizaciones.columns = utilizaciones.columns.str.upper()
+# Convertir los valores a minúsculas
+utilizaciones = utilizaciones.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
+utilizaciones.info()
+utilizaciones.head()
 
+
+
+
+
+
+#-----------------------------------------------------------------------------------------------------
 #Unión de bases de datos
 # df_resultado = pd.merge(pd.merge(df_egresos_cod, df_cronico_cod, on='NRODOC', how='right'), df_usuarios_cod, on='NRODOC', how='inner')
 union = pd.merge(utilizaciones, demograficas, on="Afiliado_Id", how='left')
