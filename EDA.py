@@ -18,6 +18,7 @@ utilizaciones = pd.read_csv("BD_UtilizacionesMedicas.csv", sep=";")
 asegurados.columns
 asegurados.head()
 asegurados.isnull().sum()
+asegurados = asegurados.rename(columns={'Asegurado_Id' : 'AFILIADO_ID'})
 asegurados["FECHA_CANCELACION"].fillna(asegurados["FECHA_FIN"], inplace=True) #Se reemplazan valores nulos de la fecha cancelación por la fecha fin 
 fechas = ["FECHA_INICIO", "FECHA_FIN", "FECHA_CANCELACION"]
 for i in fechas:
@@ -31,6 +32,8 @@ asegurados.drop("FECHAS", axis=1, inplace=True)
 asegurados.columns = asegurados.columns.str.upper()
 asegurados.info()
 asegurados.head()
+
+# asegurados[asegurados["ASEGURADO_ID"]==2668445]
 
 
 #diagnostico
@@ -86,6 +89,7 @@ regional.head()
 fn.unicos(regional)
 regional.isnull().sum()
 # Convertir las columnas a mayúsculas
+regional = regional.rename(columns={'Regional_Id' : 'Regional'})
 regional.columns = regional.columns.str.upper()
 # Convertir los valores a minúsculas
 regional = regional.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
@@ -121,22 +125,25 @@ utilizaciones.info()
 utilizaciones.head()
 
 
-
-
-
-
 #-----------------------------------------------------------------------------------------------------
 #Unión de bases de datos
-# df_resultado = pd.merge(pd.merge(df_egresos_cod, df_cronico_cod, on='NRODOC', how='right'), df_usuarios_cod, on='NRODOC', how='inner')
-union = pd.merge(utilizaciones, demograficas, on="Afiliado_Id", how='left')
-union = pd.merge(union, genero, on="Sexo_Cd", how='left')
-union = union.rename(columns={'Regional': 'Regional_Id'})
-union = pd.merge(union, regional, on="Regional_Id", how='left')
-union = pd.merge(union, diagnostico, on="Diagnostico_Codigo", how="left")
-union = pd.merge(union,reclamos, on="Reclamacion_Cd", how="left")
+union = pd.merge(utilizaciones, asegurados, on="AFILIADO_ID", how="left")
+union = pd.merge(union, demograficas, on="AFILIADO_ID", how="left")
+union = pd.merge(union, genero, on="SEXO_CD", how='left')
+# union = union.rename(columns={'Regional': 'Regional_Id'})
+union = pd.merge(union, regional, on="REGIONAL", how='left')
+union = pd.merge(union, diagnostico, on="DIAGNOSTICO_CODIGO", how="left")
+union = pd.merge(union,reclamos, on="RECLAMACION_CD", how="left")
+union.head()
 fn.unicos(union)
 union.isnull().sum()
 union.head()
+union.info()
+union.shape
+
+for i in union.columns:
+    if union[i].dtype == "float64":
+        union[i] = union[i].astype(int)
 
 
 # Correlación
