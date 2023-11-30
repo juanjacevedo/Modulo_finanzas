@@ -2,6 +2,8 @@
 import pandas as pd
 import funciones as fn 
 import dtale
+import matplotlib.pyplot as plt
+import seaborn as sns
 from collections import Counter
 
 
@@ -33,9 +35,6 @@ asegurados.columns = asegurados.columns.str.upper()
 asegurados.info()
 asegurados.head()
 
-# asegurados[asegurados["ASEGURADO_ID"]==2668445]
-
-
 #diagnostico
 diagnostico.columns
 diagnostico.head()
@@ -45,13 +44,6 @@ diagnostico.duplicated().sum()
 diagnostico.columns = diagnostico.columns.str.upper()
 # Convertir los valores a minúsculas
 diagnostico = diagnostico.apply(lambda x: x.str.lower() if x.dtype == 'object' else x)
-# for columna in diagnostico.columns:
-#     conteo_valores = Counter(diagnostico[columna])
-#     conteo_filtrado = {k: v for k, v in conteo_valores.items() if v > 1}
-#     # print(f"Conteo de valores en {columna} con frecuencia mayor a 1:\n{conteo_filtrado}\n")
-#     conteo_filtrado = (list(conteo_filtrado.items()))
-# for i in conteo_filtrado:
-#     print(i)
 diagnostico.info()
 diagnostico.head()
 
@@ -127,7 +119,7 @@ utilizaciones.head()
 
 #-----------------------------------------------------------------------------------------------------
 #Unión de bases de datos
-union = pd.merge(utilizaciones, asegurados, on="AFILIADO_ID", how="left")
+union = pd.merge(utilizaciones, asegurados, on="AFILIADO_ID", how="inner")
 union = pd.merge(union, demograficas, on="AFILIADO_ID", how="left")
 union = pd.merge(union, genero, on="SEXO_CD", how='left')
 # union = union.rename(columns={'Regional': 'Regional_Id'})
@@ -140,11 +132,6 @@ union.isnull().sum()
 union.head()
 union.info()
 union.shape
-
-for i in union.columns:
-    if union[i].dtype == "float64":
-        union[i] = union[i].astype(int)
-
 
 # Correlación
 correlacion = union.corr()
@@ -162,6 +149,11 @@ for i in range(len(correlacion.columns)):
         if abs(correla) >= umbral_correlacion:
             print(f"{variable1} - {variable2}: {correla:.2f}")
 
-# union = union.drop_duplicates()
+union = union.drop_duplicates()
 
-dtale.show(union)
+# dtale.show(union) ##Librería para generar dashboard para el análisis de la db
+
+###Eliminación de datos
+# Se Elimina lo valores de numero de utilizaciones igual a cero, ya que solo son 383 valores y no aportan al modelo
+# Se elimina "sin información" de REGIONAL_DESC debido a que son 73 datos y no aportan al modelo
+# Se elimina "-1" de SEXO_CD debido a que son 5 datos y no aportan al modelo
