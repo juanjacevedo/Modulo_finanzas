@@ -157,3 +157,110 @@ union = union.drop_duplicates()
 # Se Elimina lo valores de numero de utilizaciones igual a cero, ya que solo son 383 valores y no aportan al modelo
 # Se elimina "sin información" de REGIONAL_DESC debido a que son 73 datos y no aportan al modelo
 # Se elimina "-1" de SEXO_CD debido a que son 5 datos y no aportan al modelo
+
+union = union.drop_duplicates()
+
+# dtale.show(union) ##Librería para generar dashboard para el análisis de la db
+
+###Eliminación de datos
+# Se Elimina lo valores de numero de utilizaciones igual a cero, ya que solo son 383 valores y no aportan al modelo
+# Se elimina "sin información" de REGIONAL_DESC debido a que son 73 datos y no aportan al modelo
+# Se elimina "-1" de SEXO_CD debido a que son 5 datos y no aportan al modelo
+#
+union['EDAD'] = (union['FECHA_RECLAMACION']- union['FECHANACIMIENTO']).astype('<m8[Y]').astype(int)
+union['EDAD'].unique() 
+union = union.loc[union['EDAD'] >= 0]
+# union[union["NUMERO_UTILIZACIONES"] != 0]
+union = union[union['NUMERO_UTILIZACIONES'] > 0]
+union["REGIONAL_DESC"].value_counts()
+union = union[union["REGIONAL_DESC"] != 'sin información']
+union = union[union["SEXO_CD_DESC"]!='sin información']
+union = union[union['FECHA_INICIO'].dt.year == 2019]
+# union["COSTO_UTILIZACIONES"] = union["VALOR_UTILIZACIONES"] / union["NUMERO_UTILIZACIONES"]
+union["DIAS_RECLAMO"] = union["FECHA_CANCELACION"] - union["FECHA_INICIO"]
+union["DIAS_RECLAMO"] = union["DIAS_RECLAMO"].astype('timedelta64[D]').astype(int)
+# bins = [0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200]
+# labels = ['0-5', 
+#           '6-10', 
+#           '11-20', 
+#           '21-30', 
+#           '31-40', 
+#           '41-50', 
+#           '51-60', 
+#           '61-70', 
+#           '71-80', 
+#           '81-90', 
+#           '91-100', 
+#           '100+']
+# union['RANGO_EDAD'] = pd.cut(union['EDAD'], bins=bins, labels=labels, right=False)
+union.info()
+union.head()
+
+
+#Eliminar variables
+var_elim = ["SEXO_CD", 
+            "REGIONAL", 
+            "DIAGNOSTICO_CODIGO",
+            "RECLAMACION_CD",
+            "FECHA_FIN", 
+            "POLIZA_ID", 
+            "AFILIADO_ID", 
+            "FECHA_CANCELACION", 
+            "FECHANACIMIENTO",
+            "FECHA_RECLAMACION",
+            "FECHA_INICIO",
+            "NUMERO_UTILIZACIONES",
+            "VALOR_UTILIZACIONES", 
+            'DIAGNOSTICO_DESC', 
+            'RECLAMACION_DESC'
+            ]
+union = union.drop(var_elim, axis=1)
+union.head()
+union.info()
+
+variables_seleccionadas = ['SEXO_CD_DESC', 
+                           'REGIONAL_DESC']
+union_encoded = union.copy()
+union_encoded.info()
+union_encoded = union_encoded.drop(variables_seleccionadas, axis=1)
+union_encoded = union_encoded.reset_index(drop=True)
+
+df2 = union[['SEXO_CD_DESC', 
+             'REGIONAL_DESC']]
+df2 = pd.get_dummies(df2)
+df2 = df2.reset_index(drop=True)
+
+# df3 = union[['DIAGNOSTICO_DESC']]
+# valores = Counter(df3["DIAGNOSTICO_DESC"])
+# valores.most_common(5)
+# top_valores = [valor for valor, _ in valores.most_common(5)]
+# df3 = df3[df3["DIAGNOSTICO_DESC"].isin(top_valores)]
+# df3 = pd.get_dummies(df3)
+# df3 = df3.reset_index(drop=True)
+
+# df4 = union[['RECLAMACION_DESC']]
+# valores = Counter(df4["RECLAMACION_DESC"])
+# valores.most_common(5)
+# top_valores = [valor for valor, _ in valores.most_common(5)]
+# df4 = df4[df4["RECLAMACION_DESC"].isin(top_valores)]
+# df4 = pd.get_dummies(df4)
+# df4 = df4.reset_index(drop=True)
+
+# df = pd.concat([df3,df4], axis=1)
+# df.isnull().sum()
+# df = df.fillna(0) # representan menos del 1% de los datos totales
+# df = df.reset_index(drop=True)
+# df = pd.concat([df,df2], axis=1)
+# df.isnull().sum()
+# df = df.fillna(0)
+# df = df.reset_index(drop=True)
+
+union_encoded = pd.concat([union_encoded, df2], axis=1)
+union_encoded.isnull().sum()
+union_encoded = union_encoded.dropna() #Representa el 8% de los datos
+
+x = union_encoded.drop("COSTO_UTILIZACIONES", axis=1)
+y = union_encoded["COSTO_UTILIZACIONES"]
+
+x.info()
+###----------------------
